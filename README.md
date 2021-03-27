@@ -14,9 +14,13 @@ Una vez completado el proceso de crear la organización en Azure DevOps, os remi
 + [Instala la Azure Cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 + Añade la extensión de Azure DevOps:
 
-    az extension add --name azure-devops
+       az extension add --name azure-devops
     
     + Si al ejecutar el comando en Windows no reconoce 'az' como una expresión válida, es que falta añadir al path C:\Program Files\Microsoft SDKs\Azure\.NET SDK\v2.9
++ [Crea un Token de Acceso personal (PAT)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=preview-page#create-a-pat): el scope a elegir será de "Full access". Copia y guarda el token cuando se muestre ya que será el que usemos para hacer el login desde la Azure Cli
++ Configura como default la organización creada anteriormente para no tener que escribirla cada vez que ejecutemos un comando:
+
+       az devops configure --defaults organization=https://dev.azure.com/tu-organizacion
 ### Código y Framework
 En la práctica vamos a trabajar con un proyecto desarrollado en [.NET 5](https://dotnet.microsoft.com/download) y los pantallazos que me veréis del IDE serán de [Visual Studio Code](https://code.visualstudio.com/)
 
@@ -51,3 +55,25 @@ Hay dos maneras de hacerlo:
 
 ### Por línea de comando
 
+Lo primero es logarse:
+
+       az devops login
+
+El token que solicita es el Token de acceso personal que obtuvimos antes.
+En caso de que tuviésemos una subscripción a Azure, también sería válido el login con 
+
+       az login
+
+En todos los comandos a continuación no vamos a especificar la organización porque ya configuramos cuál era la que se cogía por defecto. Si no lo hubiésemos hecho, tendríamos que indicarla con el parámetro --org a cada uno de los comandos
+
+#### Crear un nuevo proyecto
+Creamos un proyecto con visibilidad privada y nombre "CodeMotion WokShop Project Command Line"
+
+       az devops project create --name "CodeMotion WokShop Project Command Line"
+
+Por defecto nos lo crea con visibilidad privada.
+
+#### Añadir un colaborador
+Añadimos a un usuario a la organización con una licencia de tipo Basic (y no le enviamos un email al hacerlo)
+
+       az devops user add --email-id email --license-type express --send-email-invite false
