@@ -37,7 +37,7 @@ Desde su [página](https://code.visualstudio.com/download) se puede descargar el
 ### Desde la interfaz
 #### Crear un nuevo proyecto
 Desde la página de nuestra nueva organización de Azure DevOps nos saldrá por defecto una página para crear un nuevo proyecto:
-![Página de nuestra nueva organización donde se nos pide el nombre de un nuevo proyecto a crear y si queremos que su visibilidad sea pública o privada](Imagenes/Nuevo_Proyecto.PNG). Escrimos un nombre, seleccionamos como visibilidad Private y damos al botón de crear un nuevo proyecto.
+![Página de nuestra nueva organización donde se nos pide el nombre de un nuevo proyecto a crear y si queremos que su visibilidad sea pública o privada](Imagenes/Nuevo_Proyecto.PNG). Lo nombramos como "Code Motion Demo Project", seleccionamos como visibilidad Private y damos al botón de crear un nuevo proyecto.
 
 Una vez creado, si volvemos a la página principal de la organización podemos ver listado nuestro nuevo proyecto creado y nos aparece el botón de crear un nuevo proyecto desde la interfaz de igual manera que el que acabamos de crear.
 #### Añadir un colaborador
@@ -114,3 +114,50 @@ Buscamos el grupo con el displayName de Contributors:
 Con el descriptor copiado, ejecutamos el comando:
 
         az devops security group membership add --group-id descriptor --member-id email_colaborador
+
+## Creamos un repositorio en el proyecto
+Por defecto, al crear un proyecto se crea un repositorio con el mismo nombre. Como lo normal en un proyecto es tener más de una única aplicación se tendrá la necesidad de ir creando más repositorios para alojar a cada una de las aplicaciones aunque las mantengamos englobadas bajo el mismo proyecto porque la gestión de los permisos de sus componentes es común.
+Vamos a ver cómo crear un nuevo repositorio y borrar uno ya existente. Para realizar estas acciones, se deben hacer con un usuario que tenga los permisos de:
++ Create repository
++ Delete repository
+
+De los grupos de seguridad que se crean al crear el proyecto, este permiso lo tienen:
++ Project Collection Administrators
++ Project Administrators
+
+Estas acciones, por lo tanto, vamos a ejecutarlas con el usuario que creó el proyecto y no con el colaborador que añadimos previamente, ya que al estar en el grupo de Contributors no tendrá permisos.
+
+### Desde la interfaz gráfica
+Accedemos a nuestro proyecto de "Code Motion Demo Project" y en el menú lateral izquierdo hacemos click sobre Repos. Al hacerlo, en la parte de arriba, veremos que nos está marcando la ruta donde nos encontramos como:
+organizacion / Code Motion Demo Project / Repos / Files / (icono de git) Code Motion Demo Project
+
+Justo a la derecha del nombre del repositorio hay una flecha, que al hacer click sale un desplegable donde se puede ver el listado de repositorios del proyecto y además nos da las opciones de:
++ Crear un repositorio
++ Importar un repositorio
++ Gestionar los repositorios
+
+![Imagen donde se muestra justo lo descrito anteriormente](Imagenes/Opciones_repositorios.PNG)
+
+Tanto desde aquí como desde Gestinar los repositorios podremos crear un nuevo repositorio.
+Sólo desde aquí tenemos la opción de clonar un repositorio ya existente.
+Sólo desde Gestionar los repositorios podremos renombrar y borrar los repositorios ya existentes.
+
+### Por línea de comando
+
+TODO:
++   Escribir el código a usar como demo
++   Crear el repo
++   Subir el código
++   Crear pipeline que compile el código y ejecute las pruebas
++   Añadir control de flujo de ramas a la pipeline
++   Crear ramas
++   Poner como default la de develop
++   Crear algún grupo más a usar en la gestión de política de ramas y añadirle a los usuarios
++   Añadir políticas a las ramas: que la pipeline se ejecute OK y que los aprobadores den su ok
++   Restringir los nombres con los que se pueden crear ramas
++   Configurar nuestro local para que pueda comunicarse con el repo
++   Crear pipeline que genera el artefacto
++   Crear pipeline de despliegue
++   Flujo desde la creación de una incidencia, su resolución y cómo va subiendo por el flujo
+    + Listar pullrequests pendientes de mi aprobación y cómo aprobarlas y completarlas
+    + Ver ejecuciones de pipelines
