@@ -72,8 +72,45 @@ Creamos un proyecto con visibilidad privada y nombre "CodeMotion WokShop Project
        az devops project create --name "CodeMotion WokShop Project Command Line"
 
 Por defecto nos lo crea con visibilidad privada.
+Como vamos a estar usando este proyecto para todos los comandos por consola, vamos a definirlo como el proyecto por defecto para no tener que definir el parámetro de proyecto en todos los comandos
+
+       az devops configure --defaults project="CodeMotion WokShop Project Command Line"
 
 #### Añadir un colaborador
 Añadimos a un usuario a la organización con una licencia de tipo Basic (y no le enviamos un email al hacerlo)
 
        az devops user add --email-id email --license-type express --send-email-invite false
+
+Una vez añadido el usuario a la organización, lo añadimos al grupo de Contributors del proyecto. Para añadir al usuario al proyecto necesitamos saber el "descriptor" del grupo. Para obtenerlo, listamos los grupos del proyecto y del output obenido recogemos el descriptor del grupo de Contributors
+
+       az devops security group list
+
+Buscamos el grupo con el displayName de Contributors:
+
+           {
+      "description": "Members of this group can add, modify, and delete items within the team project.",
+      "descriptor": "vssgp.Uy0xLTktQRU1SWM3NDI0NS0xODAyMTAwNzY2LTI1MzU3MjIwNTItMjMyNjkzMzU3OS0zMjY3NDI5NDYzLTEtNzYxNDIxODkyLTI3NDg1NDQ4NDUtMjk3NzI0MjIzOS0zMTUwMzI1NTI0",
+      "displayName": "Contributors",
+      "domain": "vstfs:///Classification/TeamProject/ebdf696b-2497-440c-8ab2-304bc2c10457",
+      "isCrossProject": null,
+      "isDeleted": null,
+      "isGlobalScope": null,
+      "isRestrictedVisible": null,
+      "legacyDescriptor": null,
+      "localScopeId": null,
+      "mailAddress": null,
+      "origin": "vsts",
+      "originId": "751219bc-8b64-4e85-b249-7967470a0c49",
+      "principalName": "[test from console]\\Contributors",
+      "scopeId": null,
+      "scopeName": null,
+      "scopeType": null,
+      "securingHostId": null,
+      "specialType": null,
+      "subjectKind": "group",
+      "url": "https://vssps.dev.azure.com/testtest/_apis/Graph/Groups/vssgp.Uy0xLTktMTU1MTM3NDI0NS0xODAyMTAwNzE1LTI1MzU3MjIwNTItMjMyNjkzMzU3OS0zMjY3NDI5NDYzLTEtNzYxNDIxODkyLTI3NDg1NDQ4NDUtMjk3NzI0MjIzOS0zMTUwMzI1NTI0"
+    }
+
+Con el descriptor copiado, ejecutamos el comando:
+
+        az devops security group membership add --group-id descriptor --member-id email_colaborador
