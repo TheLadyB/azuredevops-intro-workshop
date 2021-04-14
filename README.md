@@ -159,10 +159,75 @@ En caso que estuviésemos clonando un repositorio privado, en la instrucción de
 
        az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop --requires-authorization 
 
-Una vez cloneado el repo, eliminamos el que se creó por defecto al crear el proyecto:
+Una vez clonado el repo, eliminamos el que se creó por defecto al crear el proyecto:
 
        az repos list
-       az repos delete --id
+
+Obtenemos el id del repositorio por defecto (tiene el mismo nombre que el proyecto)
+
+       az repos delete --id id-repositorio-defecto
+
+###Inclusión del appsettings.json
+Para que el código funcione, es necesario incluir un archivo de appsettings.json al mismo nivel que Program.cs y otro al mismo nivel que DevOpsConnectorTest.cs con la siguiente información:
+       
+       {
+              "Pat": "pat",
+              "Organization": "nombre_organizacion",
+              "Project": "nombre_proyecto",
+              "Usuario": "email usuario dado de alta"
+       }
+
+
+### Creación de una pipeline que compile el código y ejecute las pruebas
+Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquierdo accedemos a la sección de Pipelines y pulsamos el botón de Create Pipeline:
+
+![Imagen donde se muestra el proceso de configuración de la pipeline](Imagenes/Configuracion_Pipeline_Compilacion.gif)
+
+* Elegimos Azure Repo Git como origen de nuestro código
+* Elegimos crear una pipeline con estructura básica
+* En el archivo yaml que nos aparece para editar lo dejamos de la siguiente manera:
+
+       # Starter pipeline
+       # Start with a minimal pipeline that you can customize to build and deploy your code.
+       # Add steps that build, run tests, deploy, and more:
+       # https://aka.ms/yaml
+
+       trigger:
+       - main
+
+       pool:
+       vmImage: ubuntu-latest
+
+       steps:
+       - task: UseDotNet@2
+       displayName: 'Install .NET 5.0.x SDK'
+       inputs:
+       version: '5.0.x'
+       performMultiLevelLookup: true
+       includePreviewVersions: true # Required for preview versions
+
+       - task: DotNetCoreCLI@2
+       displayName: "Compilación del proyecto"
+       inputs:
+       command: 'build'
+       projects: '**/*.csproj'
+
+       - task: DotNetCoreCLI@2
+       displayName: "Ejecución de las pruebas"
+       inputs:
+       command: 'test'
+       projects: '**/test.csproj'
+
+* Modificamos el nombre de la pipeline por "Pipeline-compilacion" en lugar del nombre por defecto que nos aparece. 
+![](Imagenes/Nombre_Pipeline.PNG)
+* Seleccionamos Save and Run para guardar y forzar una ejecución de la pipeline que acabamos de crear
+
+### Creación de una pipeline que genere el artefacto
+
+Repetimos el proceso anterior de compilación de la pipeline con las siguientes diferencias:
+* Nombramos a la pipeline como "Pipeline-generadora-artefacto"
+
+TODO: INCLUIR LOS COMANDOS PARA LA PUBLICACIÓN DEL ARTEFACTO
 
 ###TODO:
 
