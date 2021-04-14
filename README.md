@@ -142,12 +142,30 @@ Tanto desde aquí como desde Gestinar los repositorios podremos crear un nuevo r
 Sólo desde aquí tenemos la opción de clonar un repositorio ya existente.
 Sólo desde Gestionar los repositorios podremos renombrar y borrar los repositorios ya existentes.
 
-### Por línea de comando
+Seleccionamos entonces Importar repositorio:
++ Tipo de repositorio: Git
++ Url a clonar: la de este mismo repo: https://github.com/TheLadyB/azuredevpos-intro-workshop
++ Nombre: azuredevpos-intro-workshop
 
-TODO:
-+   Escribir el código a usar como demo
-+   Crear el repo
-+   Subir el código
+Una vez clonado, desde Manage Repositories eliminamos el repositorio que se creó por defecto al crear el proyecto.
+
+### Por línea de comando
+Se tiene que hacer en dos pasos: primero se crea el repositorio y posteriormente se importa el contenido en el mismo
+       
+       az repos --create --name azuredevpos-intro-workshop
+       az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop
+        
+En caso que estuviésemos clonando un repositorio privado, en la instrucción de importación habría que indicar que requiere autorización. Al hacerlo, nos pedirá el PAT del usuario que tiene permisos para acceder al repo privado. Por ejemplo, en caso de que este repositorio fuese privado, el comando sería el seguiente:
+
+       az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop --requires-authorization 
+
+Una vez cloneado el repo, eliminamos el que se creó por defecto al crear el proyecto:
+
+       az repos list
+       az repos delete --id
+
+###TODO:
+
 +   Crear pipeline que compile el código y ejecute las pruebas
 +   Añadir control de flujo de ramas a la pipeline
 +   Crear ramas

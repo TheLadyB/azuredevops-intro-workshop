@@ -30,78 +30,31 @@ namespace AsignacionTareas
             String Organization = Configuration["Organization"];
             String Pat = Configuration["Pat"];
             String Project = Configuration["Project"];
-            String collectionUri = $"https://dev.azure.com/{Organization}";
-            String repoName = Project;
             String usuario = Configuration["Usuario"];
 
+            DevOpsConnector connector = new DevOpsConnector(Organization, Pat);
+            WorkItemQueryResult result = connector.GetUnnasignedItems(Project);
 
-            var creds = new VssBasicCredential(string.Empty, Pat);
-
-            // Connect to Azure DevOps Services
-            var connection = new VssConnection(new Uri(collectionUri), creds);
-
-            WorkItemTrackingHttpClient witClient = connection.GetClient<WorkItemTrackingHttpClient>();
-
-            // Get 2 levels of query hierarchy items
-            List<QueryHierarchyItem> queryHierarchyItems = witClient.GetQueriesAsync(Project, depth: 2).Result;
-
-            // Search for 'My Queries' folder
-            QueryHierarchyItem myQueriesFolder = queryHierarchyItems.FirstOrDefault(qhi => qhi.Name.Equals("My Queries"));
-            if (myQueriesFolder != null)
+            if (result.WorkItems.Any())
             {
-                string queryName = "Bugs sin asignar";
-
-                // See if our query already exists under 'My Queries' folder.
-                QueryHierarchyItem NoAssignedBugsQuery = null;
-                if (myQueriesFolder.Children != null)
+                int skip = 0;
+                const int batchSize = 100;
+                IEnumerable<WorkItemReference> workItemRefs;
+                do
                 {
-                    NoAssignedBugsQuery = myQueriesFolder.Children.FirstOrDefault(qhi => qhi.Name.Equals(queryName));
-                }
-                if (NoAssignedBugsQuery == null)
-                {
-                    // if the 'REST Sample' query does not exist, create it.
-                    NoAssignedBugsQuery = new QueryHierarchyItem()
+                    workItemRefs = result.WorkItems.Skip(skip).Take(batchSize);
+                    if (workItemRefs.Any())
                     {
-                        Name = queryName,
-                        Wiql = "SELECT [System.Id],[System.WorkItemType],[System.Title],[System.AssignedTo],[System.State],[System.Tags] FROM WorkItems WHERE [System.TeamProject] = @project AND [System.WorkItemType] = 'Bug' AND [System.AssignedTo] = ''",
-                        IsFolder = false
-                    };
-                    NoAssignedBugsQuery = witClient.CreateQueryAsync(NoAssignedBugsQuery, Project, myQueriesFolder.Name).Result;
-                }
-
-                // run the 'REST Sample' query
-                WorkItemQueryResult result = witClient.QueryByIdAsync(NoAssignedBugsQuery.Id).Result;
-
-                if (result.WorkItems.Any())
-                {
-                    int skip = 0;
-                    const int batchSize = 100;
-                    IEnumerable<WorkItemReference> workItemRefs;
-                    do
-                    {
-                        workItemRefs = result.WorkItems.Skip(skip).Take(batchSize);
-                        if (workItemRefs.Any())
+                        // get details for each work item in the batch
+                        List<WorkItem> workItems = connector.GetWorkItems(workItemRefs);
+                        foreach (WorkItem workItem in workItems)
                         {
-                            // get details for each work item in the batch
-                            List<WorkItem> workItems = witClient.GetWorkItemsAsync(workItemRefs.Select(wir => wir.Id)).Result;
-                            foreach (WorkItem workItem in workItems)
-                            {
-                                JsonPatchDocument patchDocument = new JsonPatchDocument();
-                                patchDocument.Add(
-                                    new JsonPatchOperation()
-                                    {
-                                        Operation = Operation.Add,
-                                        Path = "/fields/System.AssignedTo",
-                                        Value = usuario
-                                    }
-                                );
-                                WorkItem update_result = witClient.UpdateWorkItemAsync(patchDocument, (int)workItem.Id, false).Result;
-                            }
+                            WorkItem update_result = connector.UpdateAssignedUser(workItem, usuario);
                         }
-                        skip += batchSize;
                     }
-                    while (workItemRefs.Count() == batchSize);
+                    skip += batchSize;
                 }
+                while (workItemRefs.Count() == batchSize);
             }
 
 
