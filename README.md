@@ -192,8 +192,7 @@ Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquie
        # Add steps that build, run tests, deploy, and more:
        # https://aka.ms/yaml
 
-       trigger:
-       - main
+
 
        pool:
        vmImage: ubuntu-latest
@@ -226,8 +225,48 @@ Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquie
 
 Repetimos el proceso anterior de compilación de la pipeline con las siguientes diferencias:
 * Nombramos a la pipeline como "Pipeline-generadora-artefacto"
+* La pipeline es igual a la anterior, pero añadiendo estos steps
 
-TODO: INCLUIR LOS COMANDOS PARA LA PUBLICACIÓN DEL ARTEFACTO
+       - task: DotNetCoreCLI@2
+         displayName: "Compilación del proyecto"
+         inputs:
+          command: 'build'
+          projects: '**/*.csproj'
+
+       - task: DotNetCoreCLI@2
+         displayName: "Ejecución de las pruebas"
+         inputs:
+          command: 'test'
+          projects: '**/test.csproj'
+
+* Previo a la variable del pool incluimos el trigger (queremos ejecutarlo cuando se suba el código a la rama main)
+
+       trigger:
+       - main
+
+
+
+
+
+###Creamos las ramas
+Se pueden crear desde la propia interfaz o mediante línea de comando de git como con cualquier otro repositorio de git. En este caso, vamos a clonar el repositorio y crear las ramas desde la línea de comandos.
+
+* Clonamos el repositorio (incluimos el que hemos creado mediante la interfaz y sobre el que hemos estado trabajando todo el ramo mediante la línea de comandos)
+
+       git clone https://organizacion@dev.azure.com/organizacion/CodeMotion%20WokShop%20roject%20Command%20Line/_git/azuredevpos-intro-workshop && \
+       git clone https://organizacion@dev.azure.com/organizacion/Code%20Motion%20Demo%20Project/_git/azuredevpos-intro-workshop
+
+Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y las mandamos a origen
+
+       git checkout -b qa
+       git push origin master
+
+       git checkout -b develop
+       git push origin develop
+
+####Asignamos develop como la default branch
+Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
+
 
 ###TODO:
 
