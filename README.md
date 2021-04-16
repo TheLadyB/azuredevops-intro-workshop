@@ -294,8 +294,12 @@ Vamos a necesitar los siguientes ids:
        az devops project   show --project nombre-proyecto
 
 + Id del namespace de los repositorios de Git dentro de los grupos de permisos
-
+       
+       #powershell
        $namespaceId = az devops security permission namespace list --query "[?@.name == 'Git Repositories'].namespaceId | [0]"
+
+       #bash
+       namespaceId=$(az devops security permission namespace list --query "[?@.name == 'Git Repositories'].namespaceId | [0]")
 
 + Construimos en formato hexadecimal el patrón de las ramas que vamos a permitir crear
 En una consola powershell
@@ -310,22 +314,54 @@ En una consola powershell
        $hexHotfixBranch = hexify -string  "hotfix"
        $hotfixToken = "refs/heads/$hexHotfixBranch"
 
+En una consola de bash de linux
+
+       str="feature_bash"
+       hexFeatureBranch=$(xxd -pu <<< "$str")
+       featureToken="refs/heads/$hexFeatureBranch"
+
+       str="hotfix_bash"
+       hexHotfixBranch=$(xxd -pu <<< "$str")
+       hotfixToken="refs/heads/$hexHotfixBranch"
+
+TODO: ESTO NO LO ESTÁ CODIFICANDO BIEN, PORQUE DEBERÍA TOMARLO COMO UTF-16 Y LO ESTÁ COGIENDO COMO UTF-8
+
 
 Con toda estos datos ya obtenidos, lo que vamos a hacer es: primero impedir que se puedan crear ramas y luego levantar la restricción para los patrones permitidos:
 
 + Impedimos que las personas pertenecientes al equipo de Contributors puedan crear cualquier tipo de rama en nuestro repositorio:
 
+       #powershell
        $denytokenbuild = "repoV2/$projectid/$repoid/"
        az devops security permission update --id $namespaceId --subject $descriptor_contributor.descriptor --token $denytokenbuild --deny-bit 16 --allow-bit 16494
+       
+       #bash
+       denytokenbuild="repoV2/$projectid/$repoid/"
+       az devops security permission update --id "$namespaceId" --subject $descriptor_contributor.descriptor --token "$denytokenbuild" --deny-bit 16 --allow-bit 16494
+
+
+
+
 
 + Creamos una regla para permitir que creen las ramas con un patrón:
 
+       #powershell
        $featureTokenBuild = "repoV2/$projectid/$repoid/$featureToken"
        $hotfixTokenBuild = "repoV2/$projectid/$repoid/$hotfixToken"
 
-       $allowCreateBranchFeature = az devops security permission update --id $namespaceId --subject $descriptor_contributor.descriptor --token $featureTokenBuild --deny-bit 0 --allow-bit 16
+       az devops security permission update --id $namespaceId --subject $descriptor_contributor --token $featureTokenBuild --deny-bit 0 --allow-bit 16
 
-       $allowCreateBranchHotfix = az devops security permission update --id $namespaceId --subject $descriptor_contributor.descriptor --token $hotfixTokenBuild --deny-bit 0 --allow-bit 16
+       az devops security permission update --id $namespaceId --subject $descriptor_contributor --token $hotfixTokenBuild --deny-bit 0 --allow-bit 16
+       
+       #bash
+       featureTokenBuild="repoV2/$projectid/$repoid/$featureToken"
+       hotfixTokenBuild="repoV2/$projectid/$repoid/$hotfixToken"
+       
+       az devops security permission update --id "$namespaceId" --subject "$descriptor_contributor" --token "$featureTokenBuild" --deny-bit 0 --allow-bit 16
+
+       az devops security permission update --id "$namespaceId" --subject "$descriptor_contributor" --token "$hotfixTokenBuild" --deny-bit 0 --allow-bit 16
+
+
 
 ###Añadir control de flujo de ramas a la pipeline que compila el código
 
