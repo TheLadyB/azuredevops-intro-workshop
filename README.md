@@ -152,12 +152,12 @@ Una vez clonado, desde Manage Repositories eliminamos el repositorio que se cre�
 ### Por línea de comando
 Se tiene que hacer en dos pasos: primero se crea el repositorio y posteriormente se importa el contenido en el mismo
        
-       az repos --create --name azuredevpos-intro-workshop
+       az repos create --name azuredevpos-intro-workshop
        az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop
         
 En caso que estuviésemos clonando un repositorio privado, en la instrucción de importación habría que indicar que requiere autorización. Al hacerlo, nos pedirá el PAT del usuario que tiene permisos para acceder al repo privado. Por ejemplo, en caso de que este repositorio fuese privado, el comando sería el seguiente:
 
-       az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop --requires-authorization 
+       az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop --requires-authorization --user-name usuario-github
 
 Una vez clonado el repo, eliminamos el que se creó por defecto al crear el proyecto:
 
@@ -267,19 +267,77 @@ Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y 
 ####Asignamos develop como la default branch
 Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
 
+###Restringir la estructura de carpetas con la que se pueden crear las ramas
+Queremos forzar una nomenclatura y un flujo que deban seguir las ramas en nuestro repositorio. Empezamos forzando que las ramas se creen siguiendo una estructura de carpetas de la siguiente forma:
 
-###TODO:
++ Vamos a forzar a los contribuidores del proyecto a que creen todas sus ramas dentro de una carpeta llamada feature o hotfix
 
-+   Crear pipeline que compile el código y ejecute las pruebas
-+   Añadir control de flujo de ramas a la pipeline
-+   Crear ramas
-+   Poner como default la de develop
-+   Crear algún grupo más a usar en la gestión de política de ramas y añadirle a los usuarios
-+   Añadir políticas a las ramas: que la pipeline se ejecute OK y que los aprobadores den su ok
-+   Restringir los nombres con los que se pueden crear ramas
-+   Configurar nuestro local para que pueda comunicarse con el repo
-+   Crear pipeline que genera el artefacto
-+   Crear pipeline de despliegue
-+   Flujo desde la creación de una incidencia, su resolución y cómo va subiendo por el flujo
-    + Listar pullrequests pendientes de mi aprobación y cómo aprobarlas y completarlas
-    + Ver ejecuciones de pipelines
+Estas reglas no se pueden implantar mediante la interfaz gráfica, sino sólo dese la cli o desde la consola para desarrolladores del visual studio (pero esto último sólo se podrá ejecutar desde windows y se considera que los comandos tf están deprecados)
+
+Vamos a necesitar los siguientes ids:
++ Descriptor del grupo de Contributors (deberíamos tenerlo de antes, pero en todo caso, lo podemos obtener de nuevo del listado de grupos de seguridad)
+
+       az devops security group list
+
+  + O, desde una consola de powershell
+
+              $project= Nombre_proyecto
+
+              $descriptor_contributor = az devops security group list  | ConvertFrom-Json | select -expand graphGroups | where principalName -eq "[$project]\Project Administrators"
+
++ Id del repositorio sobre el que queremos aplicar las restricciones. Lo podemos sacar del listado de repositorios
+
+       az repos list
+
++ Id del proyecto. Lo podemos sacar de la petición de información del proyecto (en este caso, aunque tengamos puesto un proyecto por defecto es obligatorio indicar de qué proyecto concreto queremos obtener la información)
+
+       az devops project   show --project nombre-proyecto
+
++ Id del namespace de los repositorios de Git dentro de los grupos de permisos
+
+       $namespaceId = az devops security permission namespace list --query "[?@.name == 'Git Repositories'].namespaceId | [0]"
+
++ Construimos en formato hexadecimal el patrón de las ramas que vamos a permitir crear
+En una consola powershell
+
+       function hexify($string) {
+              return ($string | Format-Hex -Encoding Unicode | Select-Object -Expand Bytes | ForEach-Object { '{0:x2}' -f $_ }) -join ''
+       }
+
+       $hexFeatureBranch = hexify -string  "feature"
+       $featureToken = "refs/heads/$hexFeatureBranch"
+
+       $hexHotfixBranch = hexify -string  "hotfix"
+       $hotfixToken = "refs/heads/$hexHotfixBranch"
+
+
+Con toda estos datos ya obtenidos, lo que vamos a hacer es: primero impedir que se puedan crear ramas y luego levantar la restricción para los patrones permitidos:
+
++ Impedimos que las personas pertenecientes al equipo de Contributors puedan crear cualquier tipo de rama en nuestro repositorio:
+
+       $denytokenbuild = "repoV2/$projectid/$repoid/"
+       az devops security permission update --id $namespaceId --subject $descriptor_contributor.descriptor --token $denytokenbuild --deny-bit 16 --allow-bit 16494
+
++ Creamos una regla para permitir que creen las ramas con un patrón:
+
+       $featureTokenBuild = "repoV2/$projectid/$repoid/$featureToken"
+       $hotfixTokenBuild = "repoV2/$projectid/$repoid/$hotfixToken"
+
+       $allowCreateBranchFeature = az devops security permission update --id $namespaceId --subject $descriptor_contributor.descriptor --token $featureTokenBuild --deny-bit 0 --allow-bit 16
+
+       $allowCreateBranchHotfix = az devops security permission update --id $namespaceId --subject $descriptor_contributor.descriptor --token $hotfixTokenBuild --deny-bit 0 --allow-bit 16
+
+###Añadir control de flujo de ramas a la pipeline que compila el código
+
+
+###Creamos al equipo de "Functional Reviewers"
+
+
+###Añadimos políticas a las ramas
+
+
+###Añadimos un Resource Group
+
+
+###Configuramos la pipeline de despliegue
+
