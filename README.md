@@ -220,7 +220,8 @@ Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquie
        projects: '**/test.csproj'
 
 * Modificamos el nombre de la pipeline por "Pipeline-compilacion" en lugar del nombre por defecto que nos aparece.
-![](Imagenes/Nombre_Pipeline.PNG)
+
+    ![](Imagenes/Nombre_Pipeline.PNG)
 
 * Seleccionamos Save and Run para guardar y forzar una ejecución de la pipeline que acabamos de crear
 
