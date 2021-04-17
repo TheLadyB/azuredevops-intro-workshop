@@ -17,7 +17,7 @@ Una vez completado el proceso de crear la organización en Azure DevOps, os remi
        az extension add --name azure-devops
     
     + Si al ejecutar el comando en Windows no reconoce 'az' como una expresión válida, es que falta añadir al path C:\Program Files\Microsoft SDKs\Azure\.NET SDK\v2.9
-    + En Linux puede que tengais que ejecutar el comando con `sudo`
+    + En Linux *puede* que tengais que ejecutar todos estos comandos con `sudo`
 + [Crea un Token de Acceso personal (PAT)](https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=preview-page#create-a-pat): el scope a elegir será de "Full access". Copia y guarda el token cuando se muestre ya que será el que usemos para hacer el login desde la Azure Cli
 + Configura como default la organización creada anteriormente para no tener que escribirla cada vez que ejecutemos un comando:
 
@@ -90,7 +90,7 @@ Una vez añadido el usuario a la organización, lo añadimos al grupo de Contrib
 
 Buscamos el grupo con el displayName de Contributors:
 
-           {
+    {
       "description": "Members of this group can add, modify, and delete items within the team project.",
       "descriptor": "vssgp.Uy0xLTktQRU1SWM3NDI0NS0xODAyMTAwNzY2LTI1MzU3MjIwNTItMjMyNjkzMzU3OS0zMjY3NDI5NDYzLTEtNzYxNDIxODkyLTI3NDg1NDQ4NDUtMjk3NzI0MjIzOS0zMTUwMzI1NTI0",
       "displayName": "Contributors",
