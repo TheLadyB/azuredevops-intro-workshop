@@ -250,7 +250,7 @@ Repetimos el proceso anterior de compilación de la pipeline con las siguientes 
        - main
 
 
-###Creamos las ramas
+### Creamos las ramas
 Se pueden crear desde la propia interfaz o mediante línea de comando de git como con cualquier otro repositorio de git. En este caso, vamos a clonar el repositorio y crear las ramas desde la línea de comandos.
 
 * Clonamos el repositorio (incluimos el que hemos creado mediante la interfaz y sobre el que hemos estado trabajando todo el ramo mediante la línea de comandos)
