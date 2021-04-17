@@ -490,6 +490,6 @@ Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
 
 ![](Imagenes/Configuracion_Pipeline_Release.gif)
 
-###¿Y ahora qué?
+### ¿Y ahora qué?
 
 Pues ya lo tenemos todo listo para que al crear una nueva rama de una nueva funcionalidad se tenga que ir subiendo por el flujo de ramas adecuado y que cuando por fin se lleguen a incorporar los cambios en la rama de main, esta de manera automática ejecute la pipeline que genera el artefacto. Al generar el artefacto, la pipeline de release salta (porque su trigger es que exista un artefacto) y nos sustituya el paquete que tenemos en nuestro local.
