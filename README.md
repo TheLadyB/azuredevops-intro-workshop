@@ -170,7 +170,7 @@ Obtenemos el id del repositorio por defecto (tiene el mismo nombre que el proyec
 
        az repos delete --id id-repositorio-defecto
 
-###Inclusión del appsettings.json
+### Inclusión del appsettings.json
 Para que el código funcione, es necesario incluir un archivo de appsettings.json al mismo nivel que Program.cs y otro al mismo nivel que DevOpsConnectorTest.cs con la siguiente información:
        
        {
