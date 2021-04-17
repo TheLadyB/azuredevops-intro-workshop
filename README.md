@@ -266,10 +266,10 @@ Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y 
        git checkout -b develop
        git push origin develop
 
-####Asignamos develop como la default branch
+#### Asignamos develop como la default branch
 Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
 
-###Restringir la estructura de carpetas con la que se pueden crear las ramas
+### Restringir la estructura de carpetas con la que se pueden crear las ramas
 Queremos forzar una nomenclatura y un flujo que deban seguir las ramas en nuestro repositorio. Empezamos forzando que las ramas se creen siguiendo una estructura de carpetas de la siguiente forma:
 
 + Vamos a forzar a los contribuidores del proyecto a que creen todas sus ramas dentro de una carpeta llamada feature o hotfix
@@ -365,7 +365,7 @@ Con toda estos datos ya obtenidos, lo que vamos a hacer es: primero impedir que 
 
 
 
-###Añadir control de flujo de ramas a la pipeline que compila el código
+### Añadir control de flujo de ramas a la pipeline que compila el código
 Ahora que tenemos restringido los nombres que pueden tener las ramas, vamos a controlar en la pipeline si cuando se hace una pullrequest se está siguiendo el flujo que nosotros queremos:
 + Que a la rama de develop sólo se puedan hacer pullrequests desde las ramas de feature o hotfix
 + Que a la rama de qa sólo se puedan hacer pullrequests desde las ramas de develop y hotfix
@@ -419,23 +419,23 @@ Accedemos a las pipelines, seleccionamos la pipeline de Pipeline-compilacion, le
 En la ErrorActionPreference seleccionamos Stop y la añadimos y guardamos la pipeline.
 
 
-###Creamos al equipo de "Functional Reviewers"
+### Creamos al equipo de "Functional Reviewers"
 Vamos a crear un grupo nuevo dentro del equipo al que vamos a denominar "Funcional Reviewers", la idea es que en este grupo estén la personas que deben dar el OK a las pullrequests. En nuestro contexto y dado que estamos trabajando con dos usuarios vamos a incluir al usuario que es administrador en este equipo.
-####Interfaz gráfica
+#### Interfaz gráfica
 Accedemos a la configuración del proyecto, los permisos y seleccionamos crear un nuevo grupo.
 
 ![](Imagenes/Creacion_equipo.png)
 
 En el menú de creación añademos directamente al usuario.
 
-####Línea de comandos
+#### Línea de comandos
 
        az devops security group create --name 'Functional Reviewers'
 
 Copiamos el descriptor y añadimos al usuario.
 
 
-###Añadimos políticas a las ramas
+### Añadimos políticas a las ramas
 Vamos a añadir una política a las ramas de qa, develop y main. Esto hará que no sea posible hacer un push directo a estas ramas, sino que la subida de código tenga que hacerse mediante pull requests. Vamos a poner las siguientes condiciones:
 
 + Que al menos una persona del grupo de Funcional Reviewers tenga que aprobar la pull request
@@ -458,7 +458,7 @@ Accedemos a nuestro proyecto, en el apartado del repositorio a las ramas. Y empe
 Repetimos con las ramas de qa y develop
 
 
-###Añadimos un Resource Group
+### Añadimos un Resource Group
 Lo que vamos a hacer es ejecutar un script en nuestro ordenador local para permitir que nuestras pipelines puedan comunicarse con él para los despliegues..
 En nuestro proyecto, en el apartado de pipelines seleccionamos Deployment groups y Add a deployment group. Tenemos que chequear "Use a personal access token in the script for authentication"  y seleccionar el sistema operativo que tengamos en nuestro local.
 
@@ -468,7 +468,7 @@ Una vez finaliza, si accedemos otra vez a Deployment groups podremos ver en el l
 
 ![](Imagenes/Estado_Deployment_Group.PNG)
 
-###Configuramos la pipeline de despliegue
+### Configuramos la pipeline de despliegue
 Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
 + Como no tenemos ninguna plantilla que se ajuste a lo que queremos (copiar nuestros archivos del artefacto a una carpeta local) seleccionamos Empty job
 + En el menú que aparece, al Stage name lo cambiamos por "Despliegue" y cerramos
