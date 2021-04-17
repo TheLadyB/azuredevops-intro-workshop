@@ -228,24 +228,22 @@ Repetimos el proceso anterior de compilación de la pipeline con las siguientes 
 * La pipeline es igual a la anterior, pero añadiendo estos steps
 
        - task: DotNetCoreCLI@2
-         displayName: "Compilación del proyecto"
          inputs:
-          command: 'build'
-          projects: '**/*.csproj'
+          command: 'publish'
+          publishWebProjects: false
+          zipAfterPublish: false
+          arguments: '--output $(Build.ArtifactStagingDirectory)'
+          projects: '**/AsignacionTareas.csproj'
 
-       - task: DotNetCoreCLI@2
-         displayName: "Ejecución de las pruebas"
+       - task: PublishBuildArtifacts@1
          inputs:
-          command: 'test'
-          projects: '**/test.csproj'
+          pathToPublish: $(Build.ArtifactStagingDirectory)
+          ArtifactName: ExNetCoreAppWinService
 
 * Previo a la variable del pool incluimos el trigger (queremos ejecutarlo cuando se suba el código a la rama main)
 
        trigger:
        - main
-
-
-
 
 
 ###Creamos las ramas
@@ -364,16 +362,129 @@ Con toda estos datos ya obtenidos, lo que vamos a hacer es: primero impedir que 
 
 
 ###Añadir control de flujo de ramas a la pipeline que compila el código
+Ahora que tenemos restringido los nombres que pueden tener las ramas, vamos a controlar en la pipeline si cuando se hace una pullrequest se está siguiendo el flujo que nosotros queremos:
++ Que a la rama de develop sólo se puedan hacer pullrequests desde las ramas de feature o hotfix
++ Que a la rama de qa sólo se puedan hacer pullrequests desde las ramas de develop y hotfix
++ Que a la rama main sólo se puedan hacer pullrequests desde las ramas de qa y hotfix
+
+Dentro de una pipeline tenemos acceso a varias variables, entre ellas, las que nos interesan para este flujo son:
++ System.PullRequest.SourceBranch
++ System.PullRequest.TargetBranch
++ Build.Reason: aunque en principio lo vamos a añadir a la pipeline "Pipeline-compilacion" que luego vamos a configurar para que salte en las pullrequests, vamos a comprobar también que efectivamente la razón por la que se está ejecutando la pipeline es por este motivo.
+
+Accedemos a las pipelines, seleccionamos la pipeline de Pipeline-compilacion, le damos a editar y añadimos una task de Tipo PowerShell. Seleccionamos que se de tipo "Inline" y en el script escribimos lo siguiente:
+
+       $trigger = "$(Build.Reason)"
+       if($trigger.ToLower() -eq "pullrequest"){
+       $sourceBranch = "$(System.PullRequest.SourceBranch)"
+       $targetBranch = "$(System.PullRequest.TargetBranch)"
+   
+       Write-Host $targetBranch
+       Write-Host $sourceBranch
+   
+       #Target Branch es Main
+       if($targetBranch.ToLower().Contains("refs/heads/main") ){
+           Write-Output "Target es main"
+           if($targetBranch.ToLower().Contains("refs/heads/main") -AND -not($sourceBranch.ToLower().Contains("refs/heads/qa")) -AND -not($sourceBranch.ToLower().Contains("refs/heads/hotfix/")))
+           {
+               Write-Output "Operacion invalida sobre la master"
+               exit 1
+           }
+       }
+       #Target Branch es qa
+       if($targetBranch.ToLower().Contains("refs/heads/integracion")){
+           Write-Output "Target es QA"
+           if($targetBranch.ToLower().Contains("refs/heads/qa") -AND  -not($sourceBranch.ToLower().Contains("refs/heads/develop/")) -AND -not($sourceBranch.ToLower().Contains("refs/heads/hotfix/")) )
+           {
+               Write-Output "Operacion inválida sobre integracion"
+               exit 1
+           }
+        }
+       #Target Branch es develop
+       if($targetBranch.ToLower().Contains("refs/heads/develop")){
+           Write-Output "Target es Integracion"
+           if($targetBranch.ToLower().Contains("refs/heads/develop") -AND  -not($sourceBranch.ToLower().Contains("refs/heads/feature/")) -AND -not($sourceBranch.ToLower().Contains("refs/heads/hotfix/")) )
+           {
+               Write-Output "Operacion inválida sobre integracion"
+               exit 1
+           }
+        }
+       }
+
+
+En la ErrorActionPreference seleccionamos Stop y la añadimos y guardamos la pipeline.
 
 
 ###Creamos al equipo de "Functional Reviewers"
+Vamos a crear un grupo nuevo dentro del equipo al que vamos a denominar "Funcional Reviewers", la idea es que en este grupo estén la personas que deben dar el OK a las pullrequests. En nuestro contexto y dado que estamos trabajando con dos usuarios vamos a incluir al usuario que es administrador en este equipo.
+####Interfaz gráfica
+Accedemos a la configuración del proyecto, los permisos y seleccionamos crear un nuevo grupo.
+
+![](Imagenes/Creacion_equipo.png)
+
+En el menú de creación añademos directamente al usuario.
+
+####Línea de comandos
+
+       az devops security group create --name 'Functional Reviewers'
+
+Copiamos el descriptor y añadimos al usuario.
 
 
 ###Añadimos políticas a las ramas
+Vamos a añadir una política a las ramas de qa, develop y main. Esto hará que no sea posible hacer un push directo a estas ramas, sino que la subida de código tenga que hacerse mediante pull requests. Vamos a poner las siguientes condiciones:
+
++ Que al menos una persona del grupo de Funcional Reviewers tenga que aprobar la pull request
++ Que la pipeline de Pipeline-compilacion se ejecute correctamente. Por cómo construimos la pipeline esto implicará:
+    + Que si no se sigue el flujo definido para las ramas, la pipeline fallará y por lo tanto no podrá completarse la pullrequest
+    +  Que no podrá subirse código que no compile
+    +  Que no podrá subirse código que no pase las pruebas unitarias definidas
+
+Accedemos a nuestro proyecto, en el apartado del repositorio a las ramas. Y empezando por la rama main, en su menú seleccionamos "branch policies":
++ Añadimos una política de Build Validation:
+    + Build pipeline: seleccionamos la pipeline "Pipeline-compilacion"
+    + Trigger: Automatic
+    + Policy requirement: Required
+
++ Añadimos una política de "Automatically included reviewers":
+    + En reviewers seleccionamos Functional Reviewers
+    + Ponemos que sea requerido con un mínimo de 1 revisor (por la limitación de usuarios que tenemos)
+    + Desmarcamos que nos podamos aprobar nuestros propios cambios
+
+Repetimos con las ramas de qa y develop
 
 
 ###Añadimos un Resource Group
+Lo que vamos a hacer es ejecutar un script en nuestro ordenador local para permitir que nuestras pipelines puedan comunicarse con él para los despliegues..
+En nuestro proyecto, en el apartado de pipelines seleccionamos Deployment groups y Add a deployment group. Tenemos que chequear "Use a personal access token in the script for authentication"  y seleccionar el sistema operativo que tengamos en nuestro local.
 
+Copiamos el script y lo ejecutamos.
+
+Una vez finaliza, si accedemos otra vez a Deployment groups podremos ver en el listado el que acabamos de crear con el Target status en Online.
+
+![](Imagenes/Estado_Deployment_Group.PNG)
 
 ###Configuramos la pipeline de despliegue
+Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
++ Como no tenemos ninguna plantilla que se ajuste a lo que queremos (copiar nuestros archivos del artefacto a una carpeta local) seleccionamos Empty job
++ En el menú que aparece, al Stage name lo cambiamos por "Despliegue" y cerramos
++ En el apartado de Artifacts, seleccionamos +Add
+  + En source type seleccionamos Build
+  + En el proyecto, seleccionamos en el que hemos estado configurando todas las pipelines y demás
+  + En Source (build pipeline) seleccionamos la pipeline generadora de artefactos
+  + Damos a Add
++ Seleccionamos Tasks
+  + Borramos el Agent job que nos aparece (está configurado para un pool y queremos que sea para nuestro Deployment Group)
+  + Seleccionando sobre Despliegue, le damos a "Add a deployment group job" y seleccionamos el que hemos creado previamente
+  + Añadimos una task a nuestro deployment group: seleccionamos la de "Copy Files To":
+    + Configuramos la carpeta de origen (donde se encuentran nuestros artefactos)
+    + Configuramos la carpeta de destino: ruta de nuestro local
+    + En opciones avanzadas seleccionamos que se reescriban los archivos
++ Guardamos y si queremos probarlo (deberíamos tener un artefacto de cuando creamos la pipeline de generación del artefacto), lanzamos la pipeline
 
+
+![](Imagenes/Configuracion_Pipeline_Release.gif)
+
+###¿Y ahora qué?
+
+Pues ya lo tenemos todo listo para que al crear una nueva rama de una nueva funcionalidad se tenga que ir subiendo por el flujo de ramas adecuado y que cuando por fin se lleguen a incorporar los cambios en la rama de main, esta de manera automática ejecute la pipeline que genera el artefacto. Al generar el artefacto, la pipeline de release salta (porque su trigger es que exista un artefacto) y nos sustituya el paquete que tenemos en nuestro local.
