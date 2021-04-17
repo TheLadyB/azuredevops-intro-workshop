@@ -37,7 +37,9 @@ Desde su [página](https://code.visualstudio.com/download) se puede descargar el
 ### Desde la interfaz
 #### Crear un nuevo proyecto
 Desde la página de nuestra nueva organización de Azure DevOps nos saldrá por defecto una página para crear un nuevo proyecto:
-![Página de nuestra nueva organización donde se nos pide el nombre de un nuevo proyecto a crear y si queremos que su visibilidad sea pública o privada](Imagenes/Nuevo_Proyecto.PNG). Lo nombramos como "Code Motion Demo Project", seleccionamos como visibilidad Private y damos al botón de crear un nuevo proyecto.
+![Página de nuestra nueva organización donde se nos pide el nombre de un nuevo proyecto a crear y si queremos que su visibilidad sea pública o privada](Imagenes/Nuevo_Proyecto.PNG)
+
+Lo nombramos como "Code Motion Demo Project", seleccionamos como visibilidad Private y damos al botón de crear un nuevo proyecto.
 
 Una vez creado, si volvemos a la página principal de la organización podemos ver listado nuestro nuevo proyecto creado y nos aparece el botón de crear un nuevo proyecto desde la interfaz de igual manera que el que acabamos de crear.
 #### Añadir un colaborador
@@ -67,7 +69,7 @@ En caso de que tuviésemos una subscripción a Azure, también sería válido el
 En todos los comandos a continuación no vamos a especificar la organización porque ya configuramos cuál era la que se cogía por defecto. Si no lo hubiésemos hecho, tendríamos que indicarla con el parámetro --org a cada uno de los comandos
 
 #### Crear un nuevo proyecto
-Creamos un proyecto con visibilidad privada y nombre "CodeMotion WokShop Project Command Line"
+Creamos un proyecto con visibilidad privada y nombre "CodeMotion WorkShop Project Command Line"
 
        az devops project create --name "CodeMotion WokShop Project Command Line"
 
