@@ -319,7 +319,8 @@ En una consola powershell
 En una consola de bash de linux
 
        str="feature_bash"
-       hexFeatureBranch=$(xxd -pu <<< "$str")
+       str_utf16=`echo $str | iconv -f utf8 -t utf16`
+       hexFeatureBranch=$(xxd -pu <<< "$str_utf16")
        featureToken="refs/heads/$hexFeatureBranch"
 
        str="hotfix_bash"
