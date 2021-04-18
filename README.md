@@ -181,6 +181,7 @@ Para que el código funcione, es necesario incluir un archivo de appsettings.jso
 
 
 ### Creación de una pipeline que compile el código y ejecute las pruebas
+
 Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquierdo accedemos a la sección de Pipelines y pulsamos el botón de Create Pipeline:
 
 ![Imagen donde se muestra el proceso de configuración de la pipeline](Imagenes/Configuracion_Pipeline_Compilacion.gif)
@@ -225,8 +226,9 @@ Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquie
 
 * Seleccionamos Save and Run para guardar y forzar una ejecución de la pipeline que acabamos de crear
 
-### Creación de una pipeline que genere el artefacto
 
+### Creación de una pipeline que genere el artefacto
+####Interfaz
 Repetimos el proceso anterior de compilación de la pipeline con las siguientes diferencias:
 * Nombramos a la pipeline como "Pipeline-generadora-artefacto"
 * La pipeline es igual a la anterior, pero añadiendo estos steps
@@ -236,7 +238,7 @@ Repetimos el proceso anterior de compilación de la pipeline con las siguientes 
           command: 'publish'
           publishWebProjects: false
           zipAfterPublish: false
-          arguments: '--output $(Build.ArtifactStagingDirectory)'
+          arguments: '-r <RID>--output $(Build.ArtifactStagingDirectory)'
           projects: '**/AsignacionTareas.csproj'
 
        - task: PublishBuildArtifacts@1
@@ -244,11 +246,18 @@ Repetimos el proceso anterior de compilación de la pipeline con las siguientes 
           pathToPublish: $(Build.ArtifactStagingDirectory)
           ArtifactName: ExNetCoreAppWinService
 
+Para nuestro proyecto de .NET core:
+* En el comando de publish es necesario indicar la plataforma de destino (la máquina donde querremos ejecutar posteriormente el ejecutable) si:
+ * Es windows (porque la pipeline se ejecuta en una máquina de linux, por lo que no si especificamos que el destino es windows no generará el .exe). Por ejemplo, para windows 10 sería win10-x64
+ * No tenemos instalado el framework y queremos que se produzca un ejecutable con todas las librerías necesarias para ejecutarse si que necesite instalar el runtime en local
 * Previo a la variable del pool incluimos el trigger (queremos ejecutarlo cuando se suba el código a la rama main)
 
        trigger:
        - main
 
+
+### Asignamos develop como la default branch
+Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
 
 ### Creamos las ramas
 Se pueden crear desde la propia interfaz o mediante línea de comando de git como con cualquier otro repositorio de git. En este caso, vamos a clonar el repositorio y crear las ramas desde la línea de comandos.
@@ -266,8 +275,7 @@ Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y 
        git checkout -b develop
        git push origin develop
 
-#### Asignamos develop como la default branch
-Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
+
 
 ### Restringir la estructura de carpetas con la que se pueden crear las ramas
 Queremos forzar una nomenclatura y un flujo que deban seguir las ramas en nuestro repositorio. Empezamos forzando que las ramas se creen siguiendo una estructura de carpetas de la siguiente forma:
@@ -318,16 +326,19 @@ En una consola powershell
 
 En una consola de bash de linux
 
-       str="feature_bash"
-       str_utf16=`echo $str | iconv -f utf8 -t utf16`
-       hexFeatureBranch=$(xxd -pu <<< "$str_utf16")
+       suffix="0a"
+
+       str="feature"
+       hexFeature_Utf8=$(xxd -pu <<< "$str")
+       hexFeature_strimEnd=${hexFeature_Utf8%"$suffix"}      
+       hexFeatureBranch=$(echo $hexFeature_strimEnd | sed 's/.\{2\}/&00/g')
        featureToken="refs/heads/$hexFeatureBranch"
 
-       str="hotfix_bash"
-       hexHotfixBranch=$(xxd -pu <<< "$str")
+       str="hotfix"
+       hexHotfix_Utf8=$(xxd -pu <<< "$str")
+       hexHotfix_strimEnd=${hexHotfix_Utf8%"$suffix"}      
+       hexHotfixBranch=$(echo $hexHotfix_strimEnd | sed 's/.\{2\}/&00/g')
        hotfixToken="refs/heads/$hexHotfixBranch"
-
-TODO: ESTO NO LO ESTÁ CODIFICANDO BIEN, PORQUE DEBERÍA TOMARLO COMO UTF-16 Y LO ESTÁ COGIENDO COMO UTF-8
 
 
 Con toda estos datos ya obtenidos, lo que vamos a hacer es: primero impedir que se puedan crear ramas y luego levantar la restricción para los patrones permitidos:
@@ -478,13 +489,16 @@ Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
   + En el proyecto, seleccionamos en el que hemos estado configurando todas las pipelines y demás
   + En Source (build pipeline) seleccionamos la pipeline generadora de artefactos
   + Damos a Add
++ Sobre el Artefacto añadido, en el icono del rayo, seleccionamos para activar el trigger de despliegue continuo:
+  + Habilitamos "Continuous deployment trigger"
+  + Como filtro de rama, incluimos que la build branch sea la main
 + Seleccionamos Tasks
   + Borramos el Agent job que nos aparece (está configurado para un pool y queremos que sea para nuestro Deployment Group)
   + Seleccionando sobre Despliegue, le damos a "Add a deployment group job" y seleccionamos el que hemos creado previamente
   + Añadimos una task a nuestro deployment group: seleccionamos la de "Copy Files To":
     + Configuramos la carpeta de origen (donde se encuentran nuestros artefactos)
     + Configuramos la carpeta de destino: ruta de nuestro local
-    + En opciones avanzadas seleccionamos que se reescriban los archivos
+    + En opciones avanzadas seleccionamos limpiar la carpeta de destino
 + Guardamos y si queremos probarlo (deberíamos tener un artefacto de cuando creamos la pipeline de generación del artefacto), lanzamos la pipeline
 
 

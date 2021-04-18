@@ -1,0 +1,68 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      $trigger = "$(Build.Reason)"
+             if($trigger.ToLower() -eq "pullrequest"){
+             $sourceBranch = "$(System.PullRequest.SourceBranch)"
+             $targetBranch = "$(System.PullRequest.TargetBranch)"
+         
+             Write-Host $targetBranch
+             Write-Host $sourceBranch
+         
+             #Target Branch es Main
+             if($targetBranch.ToLower().Contains("refs/heads/main") ){
+                 Write-Output "Target es main"
+                 if($targetBranch.ToLower().Contains("refs/heads/main") -AND -not($sourceBranch.ToLower().Contains("refs/heads/qa")) -AND -not($sourceBranch.ToLower().Contains("refs/heads/hotfix/")))
+                 {
+                     Write-Output "Operacion invalida sobre la master"
+                     exit 1
+                 }
+             }
+             #Target Branch es qa
+             if($targetBranch.ToLower().Contains("refs/heads/integracion")){
+                 Write-Output "Target es QA"
+                 if($targetBranch.ToLower().Contains("refs/heads/qa") -AND  -not($sourceBranch.ToLower().Contains("refs/heads/develop/")) -AND -not($sourceBranch.ToLower().Contains("refs/heads/hotfix/")) )
+                 {
+                     Write-Output "Operacion inválida sobre integracion"
+                     exit 1
+                 }
+              }
+             #Target Branch es develop
+             if($targetBranch.ToLower().Contains("refs/heads/develop")){
+                 Write-Output "Target es Integracion"
+                 if($targetBranch.ToLower().Contains("refs/heads/develop") -AND  -not($sourceBranch.ToLower().Contains("refs/heads/feature/")) -AND -not($sourceBranch.ToLower().Contains("refs/heads/hotfix/")) )
+                 {
+                     Write-Output "Operacion inválida sobre integracion"
+                     exit 1
+                 }
+              }
+             }
+- task: UseDotNet@2
+  displayName: 'Install .NET 5.0.x SDK'
+  inputs:
+    version: '5.0.x'
+    performMultiLevelLookup: true
+    includePreviewVersions: true # Required for preview versions
+
+- task: DotNetCoreCLI@2
+  displayName: "Compilación del proyecto"
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: "Ejecución de las pruebas"
+  inputs:
+    command: 'test'
+    projects: '**/test.csproj'
