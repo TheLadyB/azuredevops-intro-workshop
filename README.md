@@ -1,8 +1,32 @@
 # Workshop de Introducción a Azure DevOps
+Este es un workshop de introducción al trabajo con Azure DevOps. Siguiendo estas instrucciones se configurará un proyecto en Azure DevOps para que cada vez que se suba código a la rama principal se despliegue en una máquina local un ejecutable.
+En las instrucciones no sólo se verá la parte del despliegue, sino una configuración previa de los permisos y validaciones del código para gestionar que los despliegues se hagan de manera controlada.
+
+## Índice
 
 - [Preparando lo necesario](#Preparando%20lo%20necesario)
+  * [Cuenta de Azure DevOps donde vamos a trabajar](#cuenta-de-azure-devops-donde-vamos-a-trabajar)
+  * [Instalación de la Azure cli](#instalación-de-la-azure-cli)
+  * [Código y Framework](#código-y-framework)
 - [Creando nuestro primer proyecto y añadiendo a colaboradores](#creando-nuestro-primer-proyecto-y-añadiendo-a-colaboradores)
 - [Creamos un repositorio en el proyecto](#creamos-un-repositorio-en-el-proyecto)
+  * [Desde la interfaz](#desde-la-interfaz)
+  * [Por línea de comando](#por-línea-de-comando)
+- [Creamos un repositorio en el proyecto](#creamos-un-repositorio-en-el-proyecto)
+  * [Desde la interfaz gráfica](#desde-la-interfaz-gráfica)
+  * [Por línea de comando](##por-línea-de-comando-1)
+  * [Inclusión del appsettings.json](#inclusión-del-appsettingsjson)
+- [Creación de las pipelines](#creación-de-las-pipelines)
+  * [Creación de una pipeline que compile el código y ejecute las pruebas](#creación-de-una-pipeline-que-compile-el-código-y-ejecute-las-pruebas)
+  * [Creación de una pipeline que genere el artefacto](#creación-de-una-pipeline-que-genere-el-artefacto)
+- [Operaciones con las ramas](#operaciones-con-las-ramas)
+  * [Creamos las ramas](#creamos-las-ramas)
+  * [Asignamos develop como la default branch](#asignamos-develop-como-la-default-branch)
+  * [Restringir la estructura de carpetas con la que se pueden crear las ramas](#restringir-la-estructura-de-carpetas-con-la-que-se-pueden-crear-las-ramas)
+  * [Añadir control de flujo de ramas a la pipeline que compila el código](#añadir-control-de-flujo-de-ramas-a-la-pipeline-que-compila-el-código)
+  * [Gestión de las pullrequests](#gestión-de-las-pull-requests)
+- [Despliegue del código](#Despliegue-del-código)
+
 
 ## Preparando lo necesario
 Algunos flujos que se van a definir pierden un poco el sentido si todos los pasos los ejecuta el mismo usuario. Aunque se puede hacer y no hay problema, resulta más ilustrativo si se hace con más de un usuario. Si tienes más de una cuenta de correo, puedes usarlas para simular con ellas diferentes usuarios. Otra opción es hacer esto en pareja con alguien y ser cada uno contribuidor del otro.
@@ -261,9 +285,6 @@ Para nuestro proyecto de .NET core:
        - main
 
 ## Operaciones con las ramas
-### Asignamos develop como la default branch
-Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
-
 ### Creamos las ramas
 Se pueden crear desde la propia interfaz o mediante línea de comando de git como con cualquier otro repositorio de git. En este caso, vamos a clonar el repositorio y crear las ramas desde la línea de comandos.
 
@@ -280,7 +301,8 @@ Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y 
        git checkout -b develop
        git push origin develop
 
-
+### Asignamos develop como la default branch
+Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
 
 ### Restringir la estructura de carpetas con la que se pueden crear las ramas
 Queremos forzar una nomenclatura y un flujo que deban seguir las ramas en nuestro repositorio. Empezamos forzando que las ramas se creen siguiendo una estructura de carpetas de la siguiente forma:
@@ -474,7 +496,7 @@ Accedemos a nuestro proyecto, en el apartado del repositorio a las ramas. Y empe
 
 Repetimos con las ramas de qa y develop
 
-##Despliegue del código
+## Despliegue del código
 ### Añadimos un Resource Group
 Lo que vamos a hacer es ejecutar un script en nuestro ordenador local para permitir que nuestras pipelines puedan comunicarse con él para los despliegues..
 En nuestro proyecto, en el apartado de pipelines seleccionamos Deployment groups y Add a deployment group. Tenemos que chequear "Use a personal access token in the script for authentication"  y seleccionar el sistema operativo que tengamos en nuestro local.
