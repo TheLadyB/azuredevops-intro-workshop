@@ -37,7 +37,9 @@ Desde su [página](https://code.visualstudio.com/download) se puede descargar el
 ### Desde la interfaz
 #### Crear un nuevo proyecto
 Desde la página de nuestra nueva organización de Azure DevOps nos saldrá por defecto una página para crear un nuevo proyecto:
-![Página de nuestra nueva organización donde se nos pide el nombre de un nuevo proyecto a crear y si queremos que su visibilidad sea pública o privada](Imagenes/Nuevo_Proyecto.PNG). Lo nombramos como "Code Motion Demo Project", seleccionamos como visibilidad Private y damos al botón de crear un nuevo proyecto.
+![Página de nuestra nueva organización donde se nos pide el nombre de un nuevo proyecto a crear y si queremos que su visibilidad sea pública o privada](Imagenes/Nuevo_Proyecto.PNG)
+
+Lo nombramos como "Code Motion Demo Project", seleccionamos como visibilidad Private y damos al botón de crear un nuevo proyecto.
 
 Una vez creado, si volvemos a la página principal de la organización podemos ver listado nuestro nuevo proyecto creado y nos aparece el botón de crear un nuevo proyecto desde la interfaz de igual manera que el que acabamos de crear.
 #### Añadir un colaborador
@@ -67,7 +69,7 @@ En caso de que tuviésemos una subscripción a Azure, también sería válido el
 En todos los comandos a continuación no vamos a especificar la organización porque ya configuramos cuál era la que se cogía por defecto. Si no lo hubiésemos hecho, tendríamos que indicarla con el parámetro --org a cada uno de los comandos
 
 #### Crear un nuevo proyecto
-Creamos un proyecto con visibilidad privada y nombre "CodeMotion WokShop Project Command Line"
+Creamos un proyecto con visibilidad privada y nombre "CodeMotion WorkShop Project Command Line"
 
        az devops project create --name "CodeMotion WokShop Project Command Line"
 
@@ -87,7 +89,7 @@ Una vez añadido el usuario a la organización, lo añadimos al grupo de Contrib
 
 Buscamos el grupo con el displayName de Contributors:
 
-           {
+    {
       "description": "Members of this group can add, modify, and delete items within the team project.",
       "descriptor": "vssgp.Uy0xLTktQRU1SWM3NDI0NS0xODAyMTAwNzY2LTI1MzU3MjIwNTItMjMyNjkzMzU3OS0zMjY3NDI5NDYzLTEtNzYxNDIxODkyLTI3NDg1NDQ4NDUtMjk3NzI0MjIzOS0zMTUwMzI1NTI0",
       "displayName": "Contributors",
@@ -167,7 +169,7 @@ Obtenemos el id del repositorio por defecto (tiene el mismo nombre que el proyec
 
        az repos delete --id id-repositorio-defecto
 
-###Inclusión del appsettings.json
+### Inclusión del appsettings.json
 Para que el código funcione, es necesario incluir un archivo de appsettings.json al mismo nivel que Program.cs y otro al mismo nivel que DevOpsConnectorTest.cs con la siguiente información:
        
        {
@@ -217,8 +219,10 @@ Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquie
        command: 'test'
        projects: '**/test.csproj'
 
-* Modificamos el nombre de la pipeline por "Pipeline-compilacion" en lugar del nombre por defecto que nos aparece. 
-![](Imagenes/Nombre_Pipeline.PNG)
+* Modificamos el nombre de la pipeline por "Pipeline-compilacion" en lugar del nombre por defecto que nos aparece.
+
+    ![](Imagenes/Nombre_Pipeline.PNG)
+
 * Seleccionamos Save and Run para guardar y forzar una ejecución de la pipeline que acabamos de crear
 
 ### Creación de una pipeline que genere el artefacto
@@ -246,7 +250,7 @@ Repetimos el proceso anterior de compilación de la pipeline con las siguientes 
        - main
 
 
-###Creamos las ramas
+### Creamos las ramas
 Se pueden crear desde la propia interfaz o mediante línea de comando de git como con cualquier otro repositorio de git. En este caso, vamos a clonar el repositorio y crear las ramas desde la línea de comandos.
 
 * Clonamos el repositorio (incluimos el que hemos creado mediante la interfaz y sobre el que hemos estado trabajando todo el ramo mediante la línea de comandos)
@@ -262,10 +266,10 @@ Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y 
        git checkout -b develop
        git push origin develop
 
-####Asignamos develop como la default branch
+#### Asignamos develop como la default branch
 Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
 
-###Restringir la estructura de carpetas con la que se pueden crear las ramas
+### Restringir la estructura de carpetas con la que se pueden crear las ramas
 Queremos forzar una nomenclatura y un flujo que deban seguir las ramas en nuestro repositorio. Empezamos forzando que las ramas se creen siguiendo una estructura de carpetas de la siguiente forma:
 
 + Vamos a forzar a los contribuidores del proyecto a que creen todas sus ramas dentro de una carpeta llamada feature o hotfix
@@ -315,7 +319,8 @@ En una consola powershell
 En una consola de bash de linux
 
        str="feature_bash"
-       hexFeatureBranch=$(xxd -pu <<< "$str")
+       str_utf16=`echo $str | iconv -f utf8 -t utf16`
+       hexFeatureBranch=$(xxd -pu <<< "$str_utf16")
        featureToken="refs/heads/$hexFeatureBranch"
 
        str="hotfix_bash"
@@ -361,7 +366,7 @@ Con toda estos datos ya obtenidos, lo que vamos a hacer es: primero impedir que 
 
 
 
-###Añadir control de flujo de ramas a la pipeline que compila el código
+### Añadir control de flujo de ramas a la pipeline que compila el código
 Ahora que tenemos restringido los nombres que pueden tener las ramas, vamos a controlar en la pipeline si cuando se hace una pullrequest se está siguiendo el flujo que nosotros queremos:
 + Que a la rama de develop sólo se puedan hacer pullrequests desde las ramas de feature o hotfix
 + Que a la rama de qa sólo se puedan hacer pullrequests desde las ramas de develop y hotfix
@@ -415,23 +420,23 @@ Accedemos a las pipelines, seleccionamos la pipeline de Pipeline-compilacion, le
 En la ErrorActionPreference seleccionamos Stop y la añadimos y guardamos la pipeline.
 
 
-###Creamos al equipo de "Functional Reviewers"
+### Creamos al equipo de "Functional Reviewers"
 Vamos a crear un grupo nuevo dentro del equipo al que vamos a denominar "Funcional Reviewers", la idea es que en este grupo estén la personas que deben dar el OK a las pullrequests. En nuestro contexto y dado que estamos trabajando con dos usuarios vamos a incluir al usuario que es administrador en este equipo.
-####Interfaz gráfica
+#### Interfaz gráfica
 Accedemos a la configuración del proyecto, los permisos y seleccionamos crear un nuevo grupo.
 
 ![](Imagenes/Creacion_equipo.png)
 
 En el menú de creación añademos directamente al usuario.
 
-####Línea de comandos
+#### Línea de comandos
 
        az devops security group create --name 'Functional Reviewers'
 
 Copiamos el descriptor y añadimos al usuario.
 
 
-###Añadimos políticas a las ramas
+### Añadimos políticas a las ramas
 Vamos a añadir una política a las ramas de qa, develop y main. Esto hará que no sea posible hacer un push directo a estas ramas, sino que la subida de código tenga que hacerse mediante pull requests. Vamos a poner las siguientes condiciones:
 
 + Que al menos una persona del grupo de Funcional Reviewers tenga que aprobar la pull request
@@ -454,7 +459,7 @@ Accedemos a nuestro proyecto, en el apartado del repositorio a las ramas. Y empe
 Repetimos con las ramas de qa y develop
 
 
-###Añadimos un Resource Group
+### Añadimos un Resource Group
 Lo que vamos a hacer es ejecutar un script en nuestro ordenador local para permitir que nuestras pipelines puedan comunicarse con él para los despliegues..
 En nuestro proyecto, en el apartado de pipelines seleccionamos Deployment groups y Add a deployment group. Tenemos que chequear "Use a personal access token in the script for authentication"  y seleccionar el sistema operativo que tengamos en nuestro local.
 
@@ -464,7 +469,7 @@ Una vez finaliza, si accedemos otra vez a Deployment groups podremos ver en el l
 
 ![](Imagenes/Estado_Deployment_Group.PNG)
 
-###Configuramos la pipeline de despliegue
+### Configuramos la pipeline de despliegue
 Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
 + Como no tenemos ninguna plantilla que se ajuste a lo que queremos (copiar nuestros archivos del artefacto a una carpeta local) seleccionamos Empty job
 + En el menú que aparece, al Stage name lo cambiamos por "Despliegue" y cerramos
@@ -485,6 +490,6 @@ Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
 
 ![](Imagenes/Configuracion_Pipeline_Release.gif)
 
-###¿Y ahora qué?
+### ¿Y ahora qué?
 
 Pues ya lo tenemos todo listo para que al crear una nueva rama de una nueva funcionalidad se tenga que ir subiendo por el flujo de ramas adecuado y que cuando por fin se lleguen a incorporar los cambios en la rama de main, esta de manera automática ejecute la pipeline que genera el artefacto. Al generar el artefacto, la pipeline de release salta (porque su trigger es que exista un artefacto) y nos sustituya el paquete que tenemos en nuestro local.
