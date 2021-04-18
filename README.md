@@ -1,4 +1,8 @@
-# azuredevpos-intro-workshop
+# Workshop de Introducción a Azure DevOps
+
+- [Preparando lo necesario](#Preparando%20lo%20necesario)
+- [Creando nuestro primer proyecto y añadiendo a colaboradores](#creando-nuestro-primer-proyecto-y-añadiendo-a-colaboradores)
+- [Creamos un repositorio en el proyecto](#creamos-un-repositorio-en-el-proyecto)
 
 ## Preparando lo necesario
 Algunos flujos que se van a definir pierden un poco el sentido si todos los pasos los ejecuta el mismo usuario. Aunque se puede hacer y no hay problema, resulta más ilustrativo si se hace con más de un usuario. Si tienes más de una cuenta de correo, puedes usarlas para simular con ellas diferentes usuarios. Otra opción es hacer esto en pareja con alguien y ser cada uno contribuidor del otro.
@@ -9,7 +13,7 @@ Algunos flujos que se van a definir pierden un poco el sentido si todos los paso
     + Selecciona Start fee with GitHub si tienes cuenta de GitHub: deberás autorizar a que Microsoft tenga acceso a tu cuenta y completar el proceso de verificación de que efectivamente eres tú
 
 Una vez completado el proceso de crear la organización en Azure DevOps, os remitirá a una url del tipo https://dev.azure.com/nombreOrganizacion . Si olvidáis el nombre de la organización, siempre podéis volver a la url donde creasteis la organización (https://azure.microsoft.com/en-us/services/devops/) y desde ahí seleccionar "Sign in to Azure DevOps" para que os lleve a vuestra organización
-#### Instalación de la Azure Cli
+### Instalación de la Azure Cli
 
 + [Instala la Azure Cli](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 + Añade la extensión de Azure DevOps:
@@ -180,6 +184,7 @@ Para que el código funcione, es necesario incluir un archivo de appsettings.jso
        }
 
 
+## Creación de las pipelines
 ### Creación de una pipeline que compile el código y ejecute las pruebas
 
 Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquierdo accedemos a la sección de Pipelines y pulsamos el botón de Create Pipeline:
@@ -228,7 +233,7 @@ Accedemos al proyecto donde tenemos nuestro código y en el menú lateral izquie
 
 
 ### Creación de una pipeline que genere el artefacto
-####Interfaz
+
 Repetimos el proceso anterior de compilación de la pipeline con las siguientes diferencias:
 * Nombramos a la pipeline como "Pipeline-generadora-artefacto"
 * La pipeline es igual a la anterior, pero añadiendo estos steps
@@ -255,7 +260,7 @@ Para nuestro proyecto de .NET core:
        trigger:
        - main
 
-
+## Operaciones con las ramas
 ### Asignamos develop como la default branch
 Desde el apartado de branches, posicionamos el ratón sobre la rama de develop y en el menú de tres puntitos que aparece a la derecha seleccionamos "Set as default branch"
 
@@ -430,24 +435,24 @@ Accedemos a las pipelines, seleccionamos la pipeline de Pipeline-compilacion, le
 
 En la ErrorActionPreference seleccionamos Stop y la añadimos y guardamos la pipeline.
 
-
-### Creamos al equipo de "Functional Reviewers"
+### Gestión de las pull requests
+#### Creamos al equipo de "Functional Reviewers"
 Vamos a crear un grupo nuevo dentro del equipo al que vamos a denominar "Funcional Reviewers", la idea es que en este grupo estén la personas que deben dar el OK a las pullrequests. En nuestro contexto y dado que estamos trabajando con dos usuarios vamos a incluir al usuario que es administrador en este equipo.
-#### Interfaz gráfica
+##### Interfaz gráfica
 Accedemos a la configuración del proyecto, los permisos y seleccionamos crear un nuevo grupo.
 
 ![](Imagenes/Creacion_equipo.png)
 
 En el menú de creación añademos directamente al usuario.
 
-#### Línea de comandos
+##### Línea de comandos
 
        az devops security group create --name 'Functional Reviewers'
 
 Copiamos el descriptor y añadimos al usuario.
 
 
-### Añadimos políticas a las ramas
+#### Añadimos políticas a las ramas
 Vamos a añadir una política a las ramas de qa, develop y main. Esto hará que no sea posible hacer un push directo a estas ramas, sino que la subida de código tenga que hacerse mediante pull requests. Vamos a poner las siguientes condiciones:
 
 + Que al menos una persona del grupo de Funcional Reviewers tenga que aprobar la pull request
@@ -469,7 +474,7 @@ Accedemos a nuestro proyecto, en el apartado del repositorio a las ramas. Y empe
 
 Repetimos con las ramas de qa y develop
 
-
+##Despliegue del código
 ### Añadimos un Resource Group
 Lo que vamos a hacer es ejecutar un script en nuestro ordenador local para permitir que nuestras pipelines puedan comunicarse con él para los despliegues..
 En nuestro proyecto, en el apartado de pipelines seleccionamos Deployment groups y Add a deployment group. Tenemos que chequear "Use a personal access token in the script for authentication"  y seleccionar el sistema operativo que tengamos en nuestro local.
@@ -504,6 +509,6 @@ Desde Pipelines, seleccionamos Release y le damos a crear una nueva Pipeline:
 
 ![](Imagenes/Configuracion_Pipeline_Release.gif)
 
-### ¿Y ahora qué?
+## ¿Y ahora qué?
 
 Pues ya lo tenemos todo listo para que al crear una nueva rama de una nueva funcionalidad se tenga que ir subiendo por el flujo de ramas adecuado y que cuando por fin se lleguen a incorporar los cambios en la rama de main, esta de manera automática ejecute la pipeline que genera el artefacto. Al generar el artefacto, la pipeline de release salta (porque su trigger es que exista un artefacto) y nos sustituya el paquete que tenemos en nuestro local.
