@@ -2,6 +2,8 @@
 Este es un workshop de introducción al trabajo con Azure DevOps. Siguiendo estas instrucciones se configurará un proyecto en Azure DevOps para que cada vez que se suba código a la rama principal se despliegue en una máquina local un ejecutable.
 En las instrucciones no sólo se verá la parte del despliegue, sino una configuración previa de los permisos y validaciones del código para gestionar que los despliegues se hagan de manera controlada.
 
+Este taller es la evolución de la charla de ["Del hola mundo al despliegue autmático" de Women in DevOps](https://www.youtube.com/watch?v=WBBIjZcvuIM)
+
 ## Índice
 
 - [Preparando lo necesario](#Preparando%20lo%20necesario)
