@@ -174,7 +174,7 @@ Sólo desde Gestionar los repositorios podremos renombrar y borrar los repositor
 
 Seleccionamos entonces Importar repositorio:
 + Tipo de repositorio: Git
-+ Url a clonar: la de este mismo repo: https://github.com/TheLadyB/azuredevpos-intro-workshop
++ Url a clonar: la de este mismo repo: https://github.com/TheLadyB/azuredevops-intro-workshop
 + Nombre: azuredevpos-intro-workshop
 
 Una vez clonado, desde Manage Repositories eliminamos el repositorio que se creó por defecto al crear el proyecto.
@@ -182,12 +182,12 @@ Una vez clonado, desde Manage Repositories eliminamos el repositorio que se cre�
 ### Por línea de comando
 Se tiene que hacer en dos pasos: primero se crea el repositorio y posteriormente se importa el contenido en el mismo
        
-       az repos create --name azuredevpos-intro-workshop
-       az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop
+       az repos create --name azuredevops-intro-workshop
+       az repos import create --git-source-url https://github.com/TheLadyB/azuredevops-intro-workshop -r azuredevops-intro-workshop
         
 En caso que estuviésemos clonando un repositorio privado, en la instrucción de importación habría que indicar que requiere autorización. Al hacerlo, nos pedirá el PAT del usuario que tiene permisos para acceder al repo privado. Por ejemplo, en caso de que este repositorio fuese privado, el comando sería el seguiente:
 
-       az repos import create --git-source-url https://github.com/TheLadyB/azuredevpos-intro-workshop -r azuredevpos-intro-workshop --requires-authorization --user-name usuario-github
+       az repos import create --git-source-url https://github.com/TheLadyB/azuredevops-intro-workshop -r azuredevops-intro-workshop --requires-authorization --user-name usuario-github
 
 Una vez clonado el repo, eliminamos el que se creó por defecto al crear el proyecto:
 
@@ -290,8 +290,8 @@ Se pueden crear desde la propia interfaz o mediante línea de comando de git com
 
 * Clonamos el repositorio (incluimos el que hemos creado mediante la interfaz y sobre el que hemos estado trabajando todo el ramo mediante la línea de comandos)
 
-       git clone https://organizacion@dev.azure.com/organizacion/CodeMotion%20WokShop%20roject%20Command%20Line/_git/azuredevpos-intro-workshop && \
-       git clone https://organizacion@dev.azure.com/organizacion/Code%20Motion%20Demo%20Project/_git/azuredevpos-intro-workshop
+       git clone https://organizacion@dev.azure.com/organizacion/CodeMotion%20WokShop%20roject%20Command%20Line/_git/azuredevops-intro-workshop && \
+       git clone https://organizacion@dev.azure.com/organizacion/Code%20Motion%20Demo%20Project/_git/azuredevops-intro-workshop
 
 Y desde la ubicación de cada uno de nuestros repositorios, creamos las ramas y las mandamos a origen
 
